@@ -16,9 +16,42 @@ class DashboardPress{
         add_action('admin_enqueue_scripts', [$this, 'dashboardpress_assets']);
         add_action('admin_menu', [$this, 'dashboardpress_adminmenu']);
         add_filter('script_loader_tag', [$this, 'dashboardpress_loadScript'], 10, 3);
+        add_action('rest_api_init', [$this, 'dashboardpress_create_endpoint']);
     }
 
+    public function dashboardpress_create_endpoint(){
+        register_rest_route('dashboardpress/v1', '/news', array(
+            'methods'             => 'POST',
+            'callback'            => array( $this, 'create_update_post_endpoint' ),
+        ));
+    }
 
+    public function create_update_post_endpoint($param){
+        var_dump($param);
+        // $reg_errors = new \WP_Error();
+        // $title = isset($param["title"]) ? sanitize_text_field($param["title"]) : null;
+        // $desc = isset($param["content"]) ? sanitize_text_field($param["content"]) : "";
+        // if ($reg_errors->get_error_messages()) {
+        //     wp_send_json_error($reg_errors->get_error_messages());
+        // } else {
+        //     $data = [
+        //         "post_type" => "post",
+        //         "post_title" => $title,
+        //         "post_content" => $desc,
+        //         "post_status" => "publish",
+        //         "post_author" => get_current_user_id(),
+        //         "menu_order"  => 0, //added default menu order for carvan board
+        //     ];
+        //     $post_id = wp_insert_post($data);
+
+        //     if (!is_wp_error($post_id)) {
+
+        //         wp_send_json_success($post_id);
+        //     } else {
+        //         wp_send_json_error();
+        //     }
+        // }
+    }
     // Admin Menu
     public function dashboardpress_adminmenu(){
         add_menu_page(
@@ -51,6 +84,11 @@ class DashboardPress{
             [
                 "id" => "report",
                 "label" => esc_html__("Report", "dashboardpress"),
+                "capability" => "manage_options",
+            ],
+            [
+                "id" => "forms",
+                "label" => esc_html__("Forms", "dashboardpress"),
                 "capability" => "manage_options",
             ]
         ];
@@ -86,9 +124,15 @@ class DashboardPress{
     }
 
     // Admin Asset Enqueue
-    public function dashboardpress_assets(){
-        wp_enqueue_script( 'tailwind', 'https://cdn.tailwindcss.com', '', time(), false);
-        wp_enqueue_script( 'dashboardpress-main', 'http://localhost:5173/src/main.js', '', time(), false);
+    public function dashboardpress_assets($screen){
+        if('toplevel_page_dashboardpress'==$screen){
+            wp_enqueue_script( 'tailwind', 'https://cdn.tailwindcss.com', '', time(), false);
+            wp_enqueue_script( 'dashboardpress-main', 'http://localhost:5173/src/main.js', '', time(), false);
+            wp_localize_script( 'dashboardpress-main', 'dashboardpressExtra', array(
+                'wp_rest_nonce' => wp_create_nonce( 'wp_dashboardpress' ),
+                'admin_url' => site_url(),
+            ) );
+        }
     }
 
 }

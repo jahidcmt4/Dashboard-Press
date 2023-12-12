@@ -2,6 +2,7 @@ import {createRouter, createWebHashHistory} from 'vue-router'
 import Dashboard from '../components/Dashboard.vue'
 import GetHelp from '../components/GetHelp.vue'
 import Report from '../components/Report.vue'
+import Forms from '../components/Forms.vue'
 
 const routes = [
     {
@@ -15,6 +16,10 @@ const routes = [
     {
         path : '/report',
         component : Report
+    },
+    {
+        path : '/forms',
+        component : Forms
     }
 ]
 
