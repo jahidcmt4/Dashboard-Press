@@ -14,11 +14,6 @@
         const response = await axios.post(dashboardpressExtra.admin_url+'/wp-json/dashboardpress/v1/news', {
             'title' : title.value,
             'content': content.value
-        }, {
-            headers: {
-                'X-WP-Nonce': dashboardpressExtra.wp_rest_nonce,
-                'credentials': 'include',
-            },
         });
         console.log(response.data);
     }

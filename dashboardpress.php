@@ -24,34 +24,56 @@ class DashboardPress{
             'methods'             => 'POST',
             'callback'            => array( $this, 'create_update_post_endpoint' ),
         ));
+
+        // Add News
+        register_rest_route('dashboardpress/v1', '/add-news', array(
+            'methods'             => 'POST',
+            'callback'            => array( $this, 'create_news_callback' ),
+        ));
+
+        // Update News
+        register_rest_route('dashboardpress/v1', '/update-news', array(
+            'methods'             => 'POST',
+            'callback'            => array( $this, 'update_news_callback' ),
+        ));
     }
 
     public function create_update_post_endpoint($param){
-        var_dump($param);
-        // $reg_errors = new \WP_Error();
-        // $title = isset($param["title"]) ? sanitize_text_field($param["title"]) : null;
-        // $desc = isset($param["content"]) ? sanitize_text_field($param["content"]) : "";
-        // if ($reg_errors->get_error_messages()) {
-        //     wp_send_json_error($reg_errors->get_error_messages());
-        // } else {
-        //     $data = [
-        //         "post_type" => "post",
-        //         "post_title" => $title,
-        //         "post_content" => $desc,
-        //         "post_status" => "publish",
-        //         "post_author" => get_current_user_id(),
-        //         "menu_order"  => 0, //added default menu order for carvan board
-        //     ];
-        //     $post_id = wp_insert_post($data);
+        $reg_errors = new \WP_Error();
+        $title = isset($param["title"]) ? sanitize_text_field($param["title"]) : null;
+        $desc = isset($param["content"]) ? sanitize_text_field($param["content"]) : "";
+        if ($reg_errors->get_error_messages()) {
+            wp_send_json_error($reg_errors->get_error_messages());
+        } else {
+            $data = [
+                "post_type" => "post",
+                "post_title" => $title,
+                "post_content" => $desc,
+                "post_status" => "publish",
+                "post_author" => get_current_user_id(),
+                "menu_order"  => 0,
+            ];
+            $post_id = wp_insert_post($data);
 
-        //     if (!is_wp_error($post_id)) {
+            if (!is_wp_error($post_id)) {
 
-        //         wp_send_json_success($post_id);
-        //     } else {
-        //         wp_send_json_error();
-        //     }
-        // }
+                wp_send_json_success($post_id);
+            } else {
+                wp_send_json_error();
+            }
+        }
     }
+
+    // Create News Callback
+    public function create_news_callback($param){
+
+    }
+
+    // Update News Callback
+    public function update_news_callback($param){
+
+    }
+
     // Admin Menu
     public function dashboardpress_adminmenu(){
         add_menu_page(
