@@ -21,7 +21,7 @@ class DashboardPress{
 
     public function dashboardpress_create_endpoint(){
         register_rest_route('dashboardpress/v1', '/news', array(
-            'methods'             => 'POST',
+            'methods'             => 'GET',
             'callback'            => array( $this, 'news_list_callback' ),
         ));
 
@@ -39,7 +39,37 @@ class DashboardPress{
     }
 
     public function news_list_callback($param){
-        
+        $query_news = new WP_Query( array(
+            'post_type'      => 'post',
+            'posts_per_page' => 10,
+            'post_status'    => array( 'publish'),
+            'paged'          => 1,
+        ) );
+        $news       = array();
+        if ( $query_news->have_posts() ) {
+            while ( $query_news->have_posts() ) {
+                $query_news->the_post();
+                $news_id = get_the_ID();
+
+                $news_data   = array();
+
+                $news_data['id']             = $news_id;
+                $news_data['permalink']      = get_permalink( $news_id );
+                $news_data['title']          = get_the_title( $news_id );
+                $news_data['content']        = get_the_content( $news_id );
+                $news_data['status']         = get_post_status( $news_id );
+                $news_data['author']         = get_the_author_meta( 'display_name', get_post_field( 'post_author', $news_id ) );
+                $news_data['news_location']  = get_post_meta( $news_id, 'news_location', true );
+                $news[]                     = $news_data;
+            }
+        }
+        wp_reset_postdata();
+        $news = array(
+            'news' => $news,
+            'total'  => $query_news->found_posts,
+        );
+
+        return $news;
     }
 
     // Create News Callback
@@ -47,6 +77,7 @@ class DashboardPress{
         $reg_errors = new \WP_Error();
         $title = isset($param["title"]) ? sanitize_text_field($param["title"]) : null;
         $desc = isset($param["content"]) ? sanitize_text_field($param["content"]) : "";
+        $location = isset($param["location"]) ? sanitize_text_field($param["location"]) : "";
         if ($reg_errors->get_error_messages()) {
             wp_send_json_error($reg_errors->get_error_messages());
         } else {
@@ -60,8 +91,8 @@ class DashboardPress{
             ];
             $post_id = wp_insert_post($data);
 
+            update_post_meta($post_id, 'news_location', $location);
             if (!is_wp_error($post_id)) {
-
                 wp_send_json_success($post_id);
             } else {
                 wp_send_json_error();
