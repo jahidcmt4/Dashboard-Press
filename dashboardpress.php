@@ -39,36 +39,44 @@ class DashboardPress{
     }
 
     public function news_list_callback($param){
-        $query_news = new WP_Query( array(
-            'post_type'      => 'post',
-            'posts_per_page' => 10,
-            'post_status'    => array( 'publish'),
-            'paged'          => 1,
-        ) );
-        $news       = array();
-        if ( $query_news->have_posts() ) {
-            while ( $query_news->have_posts() ) {
-                $query_news->the_post();
-                $news_id = get_the_ID();
-
-                $news_data   = array();
-
-                $news_data['id']             = $news_id;
-                $news_data['permalink']      = get_permalink( $news_id );
-                $news_data['title']          = get_the_title( $news_id );
-                $news_data['content']        = get_the_content( $news_id );
-                $news_data['status']         = get_post_status( $news_id );
-                $news_data['author']         = get_the_author_meta( 'display_name', get_post_field( 'post_author', $news_id ) );
-                $news_data['news_location']  = get_post_meta( $news_id, 'news_location', true );
-                $news[]                     = $news_data;
+        if(!empty($param["ID"])){
+            $news_id = $param["ID"];
+            $news       = array();
+            $news['id']             = $news_id;
+            $news['title']          = get_the_title( $news_id );
+            $news['content']        = get_post_field('post_content', $news_id);
+            $news['news_location']  = get_post_meta( $news_id, 'news_location', true );
+        }else{
+            $query_news = new WP_Query( array(
+                'post_type'      => 'post',
+                'posts_per_page' => 10,
+                'post_status'    => array( 'publish'),
+                'paged'          => 1,
+            ) );
+            $news       = array();
+            if ( $query_news->have_posts() ) {
+                while ( $query_news->have_posts() ) {
+                    $query_news->the_post();
+                    $news_id = get_the_ID();
+    
+                    $news_data   = array();
+    
+                    $news_data['id']             = $news_id;
+                    $news_data['permalink']      = get_permalink( $news_id );
+                    $news_data['title']          = get_the_title( $news_id );
+                    $news_data['content']        = get_the_content( $news_id );
+                    $news_data['status']         = get_post_status( $news_id );
+                    $news_data['author']         = get_the_author_meta( 'display_name', get_post_field( 'post_author', $news_id ) );
+                    $news_data['news_location']  = get_post_meta( $news_id, 'news_location', true );
+                    $news[]                     = $news_data;
+                }
             }
+            wp_reset_postdata();
+            $news = array(
+                'news' => $news,
+                'total'  => $query_news->found_posts,
+            );
         }
-        wp_reset_postdata();
-        $news = array(
-            'news' => $news,
-            'total'  => $query_news->found_posts,
-        );
-
         return $news;
     }
 
@@ -102,7 +110,32 @@ class DashboardPress{
 
     // Update News Callback
     public function update_news_callback($param){
+        $reg_errors = new \WP_Error();
+        $id = isset($param['news_single']['_value']["id"]) ? sanitize_text_field($param['news_single']['_value']["id"]) : null;
+        $title = isset($param['news_single']['_value']["title"]) ? sanitize_text_field($param['news_single']['_value']["title"]) : null;
+        $desc = isset($param['news_single']['_value']["content"]) ? sanitize_text_field($param['news_single']['_value']["content"]) : "";
+        $location = isset($param['news_single']['_value']["news_location"]) ? sanitize_text_field($param['news_single']['_value']["news_location"]) : "";
+        if ($reg_errors->get_error_messages()) {
+            wp_send_json_error($reg_errors->get_error_messages());
+        } else {
+            $data = [
+                "post_type" => "post",
+                "ID" => $id,
+                "post_title" => $title,
+                "post_content" => $desc,
+                "post_status" => "publish",
+                "post_author" => get_current_user_id(),
+                "menu_order"  => 0,
+            ];
+            $post_id = wp_update_post($data);
 
+            update_post_meta($post_id, 'news_location', $location);
+            if (!is_wp_error($post_id)) {
+                wp_send_json_success($post_id);
+            } else {
+                wp_send_json_error();
+            }
+        }
     }
 
     // Admin Menu
@@ -140,8 +173,8 @@ class DashboardPress{
                 "capability" => "manage_options",
             ],
             [
-                "id" => "forms",
-                "label" => esc_html__("Forms", "dashboardpress"),
+                "id" => "news",
+                "label" => esc_html__("News", "dashboardpress"),
                 "capability" => "manage_options",
             ]
         ];
