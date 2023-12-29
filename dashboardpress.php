@@ -36,8 +36,22 @@ class DashboardPress{
             'methods'             => 'POST',
             'callback'            => array( $this, 'update_news_callback' ),
         ));
+
+
+        // leads
+        register_rest_route('dashboardpress/v1', '/leads', array(
+            'methods'             => 'GET',
+            'callback'            => array( $this, 'leads_callback' ),
+            'permission_callback' => array( $this, 'dashboardpress_permission_callback' ),
+        ));
+    }
+    public function leads_callback($param){
+        return $testing = "Hi How are you";
     }
 
+    public function dashboardpress_permission_callback( $request ) {
+        return current_user_can( 'manage_options' );
+    }
     public function news_list_callback($param){
         if(!empty($param["ID"])){
             $news_id = $param["ID"];
@@ -176,6 +190,11 @@ class DashboardPress{
                 "id" => "news",
                 "label" => esc_html__("News", "dashboardpress"),
                 "capability" => "manage_options",
+            ],
+            [
+                "id" => "leads",
+                "label" => esc_html__("Leads", "dashboardpress"),
+                "capability" => "manage_options",
             ]
         ];
 
@@ -215,7 +234,7 @@ class DashboardPress{
             wp_enqueue_script( 'tailwind', 'https://cdn.tailwindcss.com?plugins=forms', '', time(), false);
             wp_enqueue_script( 'dashboardpress-main', 'http://localhost:5173/src/main.js', '', time(), false);
             wp_localize_script( 'dashboardpress-main', 'dashboardpressExtra', array(
-                'wp_rest_nonce' => wp_create_nonce( 'wp_dashboardpress' ),
+                'wp_rest_nonce' => wp_create_nonce( 'wp_rest' ),
                 'admin_url' => site_url(),
             ) );
         }

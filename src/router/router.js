@@ -3,6 +3,7 @@ import Dashboard from '../components/Dashboard.vue'
 import GetHelp from '../components/GetHelp.vue'
 import Report from '../components/Report.vue'
 import News from '../components/News.vue'
+import Leads from '../components/Leads.vue'
 
 const routes = [
     {
@@ -20,6 +21,10 @@ const routes = [
     {
         path : '/news',
         component : News
+    },
+    {
+        path : '/leads',
+        component : Leads
     }
 ]
 
