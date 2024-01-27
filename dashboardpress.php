@@ -195,6 +195,11 @@ class DashboardPress{
                 "id" => "leads",
                 "label" => esc_html__("Leads", "dashboardpress"),
                 "capability" => "manage_options",
+            ],
+            [
+                "id" => "forms",
+                "label" => esc_html__("Forms", "dashboardpress"),
+                "capability" => "manage_options",
             ]
         ];
 

@@ -4,6 +4,7 @@ import GetHelp from '../components/GetHelp.vue'
 import Report from '../components/Report.vue'
 import News from '../components/News.vue'
 import Leads from '../components/Leads.vue'
+import Forms from '../components/Form.vue'
 
 const routes = [
     {
@@ -25,6 +26,10 @@ const routes = [
     {
         path : '/leads',
         component : Leads
+    },
+    {
+        path : '/forms',
+        component : Forms
     }
 ]
 
