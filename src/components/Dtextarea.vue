@@ -1,14 +1,13 @@
 <script setup>
 const props = defineProps([
-    'modelValue',
-    'ftype'
+    'modelValue'
 ])
 const emit = defineEmits(['update:modelValue'])
 
 </script>
 
 <template>
-    <input :value="props.modelValue" @input="emit('update:modelValue', $event.target.value)" :type="ftype" />
+    <textarea @input="emit('update:modelValue', $event.target.value)" >{{ props.modelValue }}</textarea>
 </template>
 
 <style scoped>
